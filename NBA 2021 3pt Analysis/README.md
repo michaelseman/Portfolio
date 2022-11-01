@@ -1,4 +1,4 @@
-# NBA 2021 3pt Analysis
+# NBA 2021 3 Point Analysis
 
 This is the Tableau work I did for my final Intro to Data Analytics class final project.
 
