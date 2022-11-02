@@ -1,4 +1,4 @@
-# Identifying Malicious URLS with Logistic Regression using R
+# Data Security: Predicting Malicious URLS with Logistic Regression using R
 
 This folder contains R notebook file of a project I did in Data Security and Governance class.
 
