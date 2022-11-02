@@ -8,3 +8,4 @@ FakeNameGenerator.com was used to generate a list of customers and employees for
 
 All information for products being sold including name, type, and pricing was taken from real life data in use in the restaurant industry at the time of creation.
 
+Included are a desription of my fake company, an export file to create the DB, an EER diagram, and some sample queries.
