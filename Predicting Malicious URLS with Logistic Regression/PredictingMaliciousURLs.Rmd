@@ -1,0 +1,315 @@
+---
+title: "Final Project Logistic Group 1"
+output: html_notebook
+---
+Joemichael Alvarez
+Frank Rodriguez
+Michael Seman
+
+Below are the names of the columns along with a short description/definition for them:
+
+__Avgpathtokenlen:__ Numerical-Average length of path token. The avgpathtokenlen column references these token paths or strings and groups them to calculate its average length.
+
+__pathurlRatio:__ Numerical-Path divided by URL.
+
+__ArgUrlRatio:__ Numerical-Ratio of argument and URL.
+
+__argDomanRatio:__ Numerical-Argument divided by domain. The argDomanRatio holds the sum of the arguments grouped by the specifies domains, divided by the amount of times a domain is requested. 
+
+__domainUrlRatio:__ Numerical-Domain divided by URL.
+
+ __pathDomainRatio-Numerical-Path:__ divided by Domain. The URL divided by the domain is the domain Path Domain ratio.
+ 
+__argPathRatio:__ Numerical-Ratio of argument and path.
+
+__CharacterContinuityRate:__ Numerical-Character Continuity Rate is used to find the sum of the longest token length of each character type in the domain, such as abc567ti = (3 + 3 + 1)/9 = 0.77. Malicious websites use URLs which have variable number of character types. Character continuity rate determine the sequence of letter, digit and symbol characters. The sum of longest token length of a character type is divided by the length of the URL.
+
+__NumberRate_URL:__ Numerical-Number rate calculate the proportion of digits in the URL part of URL itself.
+
+__NumberRate_FileName:__ Numerical-Number rate calculate the proportion of digits in the URL part of filename.
+
+__NumberRate_AfterPath:__ Numerical-Number rate calculate the proportion of digits in the URL parts of part after the path.
+
+__Entropy_Domain:__ Numerical-Malicious websites often insert additional characters in the URL to make it look like a legitimate. e.g, CITI can be written as CIT1, by replacing last alphabet I with digit 1. English text has fairly low entropy i.e., it is predictable. By inserting characters the entropy changes than usual. For identifying the randomly generated malicious URLs, alphabet entropy is used. A formula is used to calculate the information entropy.
+
+__class-Categorical:__ URL type: Benign or Defacement 
+
+
+```{r}
+getwd()
+```
+
+```{r}
+final<-read.csv("GroupI.csv", header=T,sep =",")
+summary(final)
+head(final)
+```
+Here is some of the EDA we did:
+```{r}
+final$class <- ifelse(final$class == "Defacement", 1, 0)
+
+benign_avg = sapply(final[final$class == 0, 0:12],mean)
+defacement_avg = sapply(final[final$class == 1, 0:12],mean)
+avg_variance = benign_avg - defacement_avg
+deviation_from_median_pct = round(abs(avg_variance/sapply(final[0:12],median))*100,2)
+deviation_from_median_pct
+```
+Here we are creating a variance based on the average of benign and defacements. When compared to the median and converted to a percent we receive how much each column is affecting a change in class.
+In the code above, what we did was apply actual numeric values to our non-numeric column. The value for Defacement will now be 1 and benign will be 0 (we reversed this later). 
+
+___OUR HYPOTHESIS___
+The main null hypothesis of our multiple logistic regression is that there is no relationship between the X variables and the Y variable; in other words, the Y values you predict from your multiple logistic regression equation are no closer to the actual Y values than you would expect by chance
+The alternative hypothesis is that there IS a relationship between the x and y variables.
+
+```{r}
+library(leaps)
+```
+
+In Professor Jobany's class, we learned the best subset selection method.  So we tried to apply this to our dataset here.
+
+```{r}
+head(final$class)
+final_regression1= lm (class~.,data=final)
+summary(final_regression1)
+```
+So this gives us a linear regression using all the predictors.  Now on to the best subset selection model.
+
+```{r}
+
+best_subset_final= regsubsets(class~.,data=final,nvmax=12)
+
+adj_r2_values = round(summary (best_subset_final)$adjr2, 2)
+```
+```{r}
+which.max(adj_r2_values)
+min(which(duplicated(adj_r2_values)))
+```
+
+```{r}
+# so 5 is probably the best choice, but if we look at adjusted r squared values, they STOP increasing at 4. So we will use the best 4.
+coef (best_subset_final, 4)
+```
+So these are the coefficients we would use to create our linear regression equation
+
+What's the R Squared for this equation?
+
+```{r}
+summary (best_subset_final)$rsq[4]
+```
+What's the residual standard error (RSE) for this equation?
+
+```{r}
+
+summary (lm(class ~ avgpathtokenlen+ArgUrlRatio+domainUrlRatio+CharacterContinuityRate, data=final))$sigma
+
+```
+
+So this would be a very conservative model to use.  But as we realized in class, Linear regression is not the right method to use for this project. Although linear regression is designed for predicting quantitative variables, it isn’t helpful when the problem isn’t quantitative. For example, in the opening example, you needed to classify the hosts as infected or not; linear regression wouldn’t be helpful in that circumstance. Instead, you can turn to logistic regression, which is an extension of linear regression.
+So now lets move on to a logistic regression.
+
+
+
+```{r}
+final1<-read.csv("GroupI.csv",sep = ",",header = TRUE)
+```
+
+
+```{r}
+mydata1<-na.omit(final1)
+```
+
+
+```{r}
+str(mydata1)
+```
+
+
+```{r}
+# the class column shows up as a variable and we want to change that to a factor
+# we accomplish that with the code below.
+mydata1$class<-as.factor(mydata1$class)
+```
+
+
+```{r}
+#confirming the change
+str(mydata1)
+```
+
+
+```{r}
+mydata1$class <- ifelse(mydata1$class == "benign", 1, 0)
+```
+
+<br>
+We are turning the class vector into a numeric vector where it would be true or false where benign is 1 and defacement is 0. (Just note that this is the opposite of how we did it in our attempt to create a linear regression model in order to help differentiate.)
+<br>
+
+
+## Train and Test Data
+
+The purpose of creating two different data sets from the original one is to improve our ability so as to accurately predict the previously unused or **unseen data**.  To add to this, we want to use one portion of the data to "train" our model. We are using that data to create/inform the model.  In real life, we might not necessarily split up our data like this.  We would use all the data available to train and create our model.  Then we would use other data such as another year or region depending on the dataset. In this instance since we do not have other data, splitting it make sense.  After training our model, we will the use the rest of the data to test it.
+
+There are a number of ways to proportionally split our data into `train` and `test` sets: 50/50, 60/40, 70/30, 80/20, and so forth. The data split that you select should be based on your experience and judgment. For this exercise, we will use a 70/30 split, as follows:
+
+```{r}
+set.seed(123)  # random number generator
+ind <- sample(2, nrow(mydata1), replace = TRUE, prob = c(0.7, 0.3))
+```
+
+We wanted to keep the 70/30 split instead of the 90/10 split in the original code, as we felt it would be a good balance of data on each side.
+
+
+Partitioning the data:
+
+```{r}
+train1 <- mydata1[ind==1, ]  #the training set
+
+test1 <- mydata1[ind==2, ]   # the testing set 
+```
+
+You can confirm the dimensions of both sets as follows:
+
+```{r}
+#the dim function retrieves or sets the dimension of an object.
+dim(train1)
+dim(test1)
+```
+The size above shows the 70/30 percent split in the training data and testing data.
+
+To ensure that we have a well-balanced outcome variable between the two data sets, we will perform the following check:
+
+```{r}
+table(train1$class)
+table(test1$class)
+#so the table function gives us the totals for 0 aka 'Defacement' and 1 aka 'benign'
+```
+This is an acceptable ratio of our outcomes in the two data sets; with this, we can begin the modeling and evaluation.
+
+
+# Modeling and Evaluation
+
+We will use the function `glm()` (from base R) for the logistic regression model.
+
+An R installation comes with the `glm()` function fitting the **generalized linear models**, which are a class of models that includes logistic regression. The code syntax is similar to the `lm()` function that we used for linear regression. One difference is that we must use the `family = binomial` argument in the function, which tells R to run a logistic regression method instead of the other versions of the generalized linear models. We will start by creating a model that includes all of the features on the train set and see how it performs on the test set:
+
+
+```{r}
+attach(train1)
+```
+
+
+```{r}
+full.fit <- glm(class ~ ., family = binomial, data = train1)
+```
+
+Create a summary of the model:
+
+```{r}
+summary(full.fit)
+```
+Looking at the summary, it is very interesting.  We notice then we use all of the predictors to make our equation 9 out of the 12 predictors are statistically significant. Only pathurlRatio (.12314), pathDomainRatio (.64509), and Entropy_Domain (.75919) have pvalues greater than alpha (.05)
+
+You cannot translate the coefficients in logistic regression as "the change in Y is based on one-unit change in X". 
+
+This is where the odds ratio can be quite helpful. The beta coefficients from the log function can be converted to odds ratios with an exponent (beta).
+
+In order to produce the odds ratios in R, we will use the following `exp(coef())` syntax:
+
+```{r}
+exp(coef(full.fit))
+```
+Normally we would use these coefficients to make our equation, but these odds ratios have a different meaning in logistical regression.
+The interpretation of an odds ratio is the change in the outcome odds resulting from a unit change in the feature. If the value is greater than 1, it indicates that, as the feature increases, the odds of the outcome increase. Conversely, a value less than 1 would mean that, as the feature increases, the odds of the outcome decrease.
+
+
+
+<br>Let us now run a model with the coefficients with the lowest p-values.<br>
+
+
+
+## Testing the model
+
+You will first have to create a vector of the predicted probabilities, as follows:
+
+```{r}
+train.probs <- predict(full.fit, type = "response")
+# inspect the first 5 probabilities
+train.probs[1:5]
+
+```
+
+Next, we need to evaluate how well the model performed in training and then evaluate how it fits on the test set. A quick way to do this is to produce a confusion matrix. The default value by which the function selects either benign or malignant is 0.50, which is to say that any probability at or above 0.50 is classified as malignant:
+
+
+```{r}
+
+trainY1<-mydata1$class[ind==1]
+testY1<-mydata1$class[ind==2]
+```
+
+
+```{r}
+install.packages("InformationValue")
+```
+
+
+```{r}
+library(InformationValue)
+```
+
+
+```{r}
+confusionMatrix(trainY1,train.probs)
+
+```
+Here's a bit more info on how the Confusion Matrix works:
+
+
+```{r}
+#just creating a new table from that data to explain the confusion matrix
+conftable=data.frame('Predict No 0'=c('TN=5025','FN=518',5543), 'Predict Yes 1'=c('FP=625','TP=4879',5504), Total=c(5650,5397,11047))
+colnames(conftable)=c('(0)Predict No', '(1)Predict Yes', 'Total')
+rownames(conftable)=c('(0)Actual  No', '(1)Actual Yes','Total')
+conftable
+```
+
+__true positives(TP):__ These are cases in which we predicted yes (class is benign), and the class IS benign.
+
+__true negatives(TN):__ We predicted no, and they are defacement.
+
+__false positives (FP):__ We predicted yes, but they aren't actually benign. (Also known as a "Type I error.")
+
+__false negatives(FN):__ We predicted no, but they actually are benign. (Also known as a "Type II error.")
+
+
+```{r}
+misClassError(trainY1, train.probs)
+```
+The misclassification error is essentially the ratio of how many predictions we got wrong. So it is calculated by adding 518+625 and dividing by the total (11047).  
+```{r}
+round((518+625)/11047,4)
+```
+
+
+```{r}
+test.probs <- predict(full.fit, newdata = test1, type = "response")
+#misclassification error
+misClassError(testY1, test.probs)
+# confusion matrix
+confusionMatrix(testY1, test.probs)
+```
+So it looks like after training and creating our model. We then test it.  Our misclassification error from our train model is .1035.  Now when we test it our number is lower at .0951.
+
+
+
+```{r}
+# This code is if we wanted to get a confusion matrix for the ENTIRE dataset, using the
+# model we trained. We don't know if this makes sense to do, but it was a fun exercise.
+mydata1.fit <- glm(class ~ ., family = binomial, data = mydata1)
+mydata1.probs <- predict(mydata1.fit, type = "response")
+mydataY1<-mydata1$class
+confusionMatrix(mydataY1,mydata1.probs)
+```
+___Conclusion:___ Given how low our misclassification error is, there is enough evidence to reject our null hypothesis (that there is no relationship between our independent variables and our dependent variable - URL type).  Using the confusion matrix we determined that there is evidence to support our alternative hypothesis. The evidence shows that we do see a relationship between the X variables and the Y variables in our beautiful dataset regarding benign and defacement values.
+
