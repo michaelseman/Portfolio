@@ -10,5 +10,6 @@ Included are:
 * a python notebook containing the code used to webscrape
 * an htm file used in conjuction with that python notebook
 
+All the webscraping and database implementation was done by me.  Queries done by my partner are marked with their first name in all caps at the start of the query.  Those done by me are marked with --MICHAEL.  The extra queries at the end were done by me.  We collaborated on database design.
 
 https://www.kaggle.com/datasets/vivovinco/nba-player-stats is the source for the player stats .csv
