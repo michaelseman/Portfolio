@@ -1,4 +1,4 @@
-# Creating an NBA Database using SSMS
+# Creating an NBA Database using SSMS (2021-2022)
 
 This was my work done for SQL Implementation class.
 
@@ -9,3 +9,6 @@ Included are:
 * an SQL to create the database along with some sample queries.
 * a python notebook containing the code used to webscrape
 * an htm file used in conjuction with that python notebook
+
+
+https://www.kaggle.com/datasets/vivovinco/nba-player-stats is the source for the player stats .csv
