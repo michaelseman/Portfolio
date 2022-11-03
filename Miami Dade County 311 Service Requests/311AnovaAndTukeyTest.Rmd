@@ -1,0 +1,176 @@
+---
+title: "Method Received Anova"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+editor_options:
+  markdown:
+    wrap: 72
+---
+## Introduction
+The purpose of this notebook is to do statistical analysis on the
+dependent variable - average ticket completion time first with the
+independent variables - submission method and then department.
+
+Basically, we want to confirm that the difference in means that we have
+demonstrated via Tableau are statistically significant using ANOVA.
+
+Then we will use TUKEY HSD to determine which of those differences are
+statistically significant as well.
+
+### Data Dictionary
+_method:_ refers to the method in which a ticket/service request was submitted to the 311 database<br>
+_days:_ refers to the actual amount of days it took for a ticket to be marked as closed (completed) aka actual completed days<br>
+_department:_ refers to the department at the county that was responsible for handling the ticket/service request<br>
+
+## __Submission Method Analysis__
+```{r}
+getwd()
+
+```
+
+```{r}
+#importing sample data for Submission Method
+method<-read.csv("C:/Users/Michael/Desktop/School/internship/method2.csv", header=T,sep =",")
+```
+
+```{r}
+head(method)
+```
+
+```{r}
+# pulling the total records and then the sample means for each Submission Method
+table(method$method)
+sort(tapply(method$days, method$method, mean))
+```
+### ANOVA Results for Submission Method
+```{r}
+# Running analysis of variance
+aov_meth = aov(days~method, data=method)
+summary(aov_meth)
+```
+
+__Conclusion:__ Our p-value is extremely low (\<2e-16) so the difference in the mean ticket completion times of submission methods is statistically significant.
+
+### Tukey HSD for Submission Method
+```{r}
+# Now we will run the Tukey Honest Significance Difference Test to see which methods can statistically proven to be "better" than the others in terms of AVG ticket completion time
+TukeyHSD(aov_meth)
+```
+
+The main columns we want to compare are:
+
+PHONE-CELL PHONE APPS   -41.1562883 -45.367627 -36.944949 0.0000000<br>
+PHONE-EMAIL             -41.9395689 -47.731002 -36.148135 0.0000000<br>
+WEB-CELL PHONE APPS -29.6180947 -35.124043 -24.112147 0.0000000<br>
+WEB-EMAIL -30.4013753 -37.192604 -23.610147 0.0000000<br>
+WEB-PHONE 11.5381936 7.715854 15.360533 0.0000000<br>
+PHONE-INHOUSE 9.8582448 2.480468 17.236022 0.0019467<br>
+
+Our ANOVA proves that there is a statistically significant difference in
+the means.
+
+The Tukey test then proves that there is a statistically significant difference between the values of Android, Iphone, Email vs Web (and phone), as well as Web vs phone, and finally phone vs inhouse.
+
+__So we can say that the methods ranked from worst to best are:__ <br>
+
+EMAIL/CELL (worst) <br>
+PHONE APPS <br>
+WEB <br>
+PHONE <br>
+INHOUSE (best)<br>
+
+## __Department Analysis__
+```{r}
+# importing sample department data
+department<-read.csv("C:/Users/Michael/Desktop/School/internship/department.csv", header=T,sep =",")
+```
+
+```{r}
+# inspecting our imported csv by getting total tickets per department
+table(department$dept)
+```
+
+
+```{r}
+# looking at the sample means of the departments actual completion time
+sort(tapply(department$days, department$dept, mean))
+```
+### ANOVA Results for Department 
+```{r}
+# running anova on independent variable DEPARTMENT with ACTUAL COMPLETED DAYS as the dependent variable.
+aov_dept = aov(days~dept, data=department)
+summary(aov_dept)
+```
+__Conclusion:__ Once again, our p-value is extremely low (\<2e-16) so the difference in the mean ticket completion time of our Departments is statistically significant.
+
+### TUKEY HSD for Department
+```{r}
+# now running TUKEY HSD test on the department data
+TukeyHSD(aov_dept)
+```
+
+This data is a bit difficult to summarize so let's revisit the sample means but eliminate those that had too small of a sample size (\<.77% of total emergency tickets). Please note that due to sample size issues,
+none of the departments eliminated had statistically adjusted p-values from TUKEY HSD.
+
+Enforcement Section                       6.72 <br>
+Solid Waste Management                    10.12 <br>
+PublicWorks: Road And Bridges             35.27 <br>
+Parks and Rec: RAAM                       49.01 <br>
+PublicWorks: Traffic Signals And Signs    61.66 <br>
+PublicWorks: Traffic Engineering          81.05<br>
+
+Now we want to look at the adjusted p-values for the comparisons we received via TUKEY HSD test. Let's pick out all the adjusted p-values that are extremely close to 0.
+
+PublicWorks: Traffic Signals And Signs-PublicWorks: Traffic Engineering 0.0000000 <br>
+PublicWorks: Traffic Engineering-Parks and Rec: RAAM 0.0000000<br>
+PublicWorks: Traffic Engineering-Enforcement Section 0.0000000<br>
+PublicWorks: Traffic Engineering-PublicWorks: Road And Bridges 0.0000000<br>
+Solid Waste Management-PublicWorks: Traffic Engineering 0.0000000<br>
+Regulatory and Economic Resources-PublicWorks: Traffic Engineering 0.0001747 <br>
+Parks and Rec: RAAM-Enforcement Section 0.0000000 <br>
+Regulatory and Economic Resources-Enforcement Section 0.0025796 <br>
+PublicWorks: Road And Bridges-Enforcement Section 0.0000000 <br>
+PublicWorks: Road And Bridges-Parks and Rec: RAAM 0.0178070 <br>
+PublicWorks: Traffic Signals And Signs-Parks and Rec: RAAM 0.0000000 <br>
+PublicWorks: Traffic Signals And Signs-Enforcement Section 0.0000000 <br>
+PublicWorks: Traffic Signals And Signs-PublicWorks: Road And Bridges 0.0000000 <br>
+Solid Waste Management-Parks and Rec: RAAM 0.0000000 <br>
+Solid Waste Management-PublicWorks: Road And Bridges 0.0001151 <br>
+Solid Waste Management-PublicWorks: Traffic Signals And Signs 0.0000000<br>
+
+*Note: One thing to remember, if the Tukey test determines the difference between the mean of one department(A) and the next closest department's(B) mean is statistically significant, we can assume that another department(C) with a mean greater than department(B) also has a statistically sigificant difference between that of department(A). Thus we can look at these differences in steps, like was done with submission method.
+
+#### Now we will go from the down our list of sample means, as make conclusions.
+
+**First, let's compare Enforcement Section and Solid Waste Management:**<br>
+Solid Waste Management-Enforcement Section 0.9984115
+
+*This adjust p-value is too high, therefore we cannot say that there is a statistically significant difference between Solid Wast Managment and Enforcement Section*
+
+**Next, let's compare Enforcement Section and Solid Waste Management to Public Works: Roads & Bridges:**<br> PublicWorks: Road And Bridges-Enforcement Section 0.0000000 <br>
+Solid Waste Management-PublicWorks: Road And Bridges 0.0001151
+
+*So we can conclude the difference (Enforcement Section and Solid Waste Management) and Public Works: Roads & Bridges is statistically significant because the adjusted P-values are extremely low.*
+
+**Let's compare Public Works: Roads & Bridges to Parks and Rec: RAAM:**<br>
+PublicWorks: Road And Bridges-Parks and Rec: RAAM 0.0178070
+
+*The difference between Public Works: Roads & Bridges to Parks and Rec: RAAM is statistically significant.*
+
+**Let's compare Parks and Rec: RAAM: to Public Works: Traffic Signals And Signs:** <br>
+PublicWorks: Traffic Signals And Signs-Parks and Rec: RAAM 0.0000000
+
+*The difference between Parks and Rec: RAAM: to Public Works: Traffic Signals And Signs is statistically significant.*
+
+**Finally, let's compare Public Works: Traffic Signals And Signs to Public Works: Traffic Engineering:**<br> PublicWorks: Traffic Signals And Signs-PublicWorks: Traffic Engineering 0.0000000
+
+*The difference between Public Works: Traffic Signals And Signs to Public Works: Traffic Engineering is statistically significant.*
+
+__So we can say that the Departments ranked from best to worst are (in terms of actual ticket completion time):__<br> 
+Enforcement Section and Solid Waste Management (best) <br>
+Public Works: Roads & Bridges <br>
+Parks and Rec: RAAM <br>
+Public Works: Traffic Signals And Signs <br>
+Public Works: Traffic Engineering (worst) 
