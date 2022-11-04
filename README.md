@@ -6,5 +6,3 @@ The work consists of projects done with Miami-Dade College's Data Analytics BS p
 In Progress: 
 1. Uploading more material to show all my award winning work with the Miami Dade County 311 dataset.
 2. Uploading files from my SSRS work
-3. Uploading NBA Database, webscraping project
-              
