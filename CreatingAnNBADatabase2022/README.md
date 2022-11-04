@@ -2,7 +2,8 @@
 
 This was my work done for SQL Implementation class.
 
-The NBA Players Stats data was taken from Kaggle while the NBA Team and Player Info was gather via python webscraping.  The webscraping was outside of the purview of the class and was learned on my own.
+The NBA Players Stats data was taken from Kaggle while the NBA Team and Player Info was gather via python webscraping.  
+The webscraping was outside of the purview of the class and was learned on my own.
 
 Included are: 
 * .csv files used for bulk insert containing all the data for the DB
