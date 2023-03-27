@@ -13,4 +13,4 @@ Included are:
 
 All the webscraping and database implementation was my own work.  Database design was a collaboration with my partner.  Individual query work is noted inside the .sql file.
 
-https://www.kaggle.com/datasets/vivovinco/nba-player-stats is the source for the player stats .csv
+I also created a Power BI notebook for this database.  Included is the notebook, a pdf detailing its creation, and a pdf of the visualizations.
