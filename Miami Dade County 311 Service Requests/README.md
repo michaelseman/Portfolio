@@ -6,4 +6,6 @@ Included is a pdf of my final poster and an R Notebook of my ANOVA and TUKEY HSD
 
 My final work that was presented at the 2022 STEM + Interdisciplinary Research Symposium was awarded the third place prize.
 
-I will be adding my final tableau workbook, my working notebooks and dashboards, and my datacleaning done in python.
+link to poster: https://libraryguides.mdc.edu/ld.php?content_id=69169387
+
+link to my bio: https://libraryguides.mdc.edu/UndergraduateResearchSymposium/Engineering
