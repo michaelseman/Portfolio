@@ -1,5 +1,5 @@
 # Portfolio
-Please view my web page Portfolio: bit.ly/michaelseman
+Please view my web page Portfolio: http://bit.ly/michaelseman
 
 
 This Portfolio consists of Data Analytics and Data Science work done using SQL, Talbeau, R, Power BI, and Python.
